@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#E8E4D8">
+  <meta name="color-scheme" content="light">
+  <meta name="format-detection" content="telephone=no">
+  <title>똑... 똑... 똑... | 이야기의 배경</title>
+  <meta name="description" content="머더미스터리 똑... 똑... 똑... 이야기의 배경 영상">
+  <style>
+    @font-face {
+      font-family: "Pretendard";
+      src: url("PretendardVariable.woff2") format("woff2-variations");
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+    }
+
+    :root {
+      --paper: #E8E4D8;
+      --paper-strong: #F3F0E7;
+      --ink: #0D0D0D;
+      --green: #16352C;
+      --green-soft: rgba(22, 53, 44, .09);
+      --green-mid: rgba(22, 53, 44, .26);
+      --green-faint: rgba(22, 53, 44, .12);
+      --screen: #080B09;
+      --focus: #9C6921;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-width: 320px; min-height: 100%; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% -10%, rgba(255,255,255,.45), transparent 34rem),
+        var(--paper);
+      font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      word-break: keep-all;
+      overscroll-behavior-y: none;
+    }
+
+    button, input, select { font: inherit; }
+    button, input, select { -webkit-tap-highlight-color: transparent; }
+    button { touch-action: manipulation; }
+
+    .page {
+      width: min(100%, 560px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding:
+        max(18px, calc(var(--safe-top) + 12px))
+        14px
+        max(18px, calc(var(--safe-bottom) + 12px));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .titlebar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 2px;
+    }
+
+    .title-copy { min-width: 0; }
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--green);
+      font-size: .67rem;
+      line-height: 1.2;
+      font-weight: 850;
+      letter-spacing: .18em;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.23rem, 5.2vw, 1.65rem);
+      line-height: 1.18;
+      font-weight: 850;
+      letter-spacing: -.035em;
+    }
+    .series {
+      flex: none;
+      margin: 0 0 2px;
+      color: var(--green);
+      font-size: .72rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .player-card {
+      overflow: hidden;
+      background: var(--paper-strong);
+      border: 1px solid var(--green-mid);
+      border-radius: 20px;
+      box-shadow: 0 18px 50px rgba(13, 13, 13, .09);
+    }
+
+    .video-wrap {
+      display: grid;
+      place-items: center;
+      padding: 10px 10px 0;
+      background: var(--paper-strong);
+    }
+
+    .video-stage {
+      position: relative;
+      width: min(100%, calc(61dvh * 9 / 16));
+      max-width: 430px;
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      background: var(--screen);
+      border-radius: 13px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
+      isolation: isolate;
+    }
+
+    video {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: var(--screen);
+    }
+
+    .tap-play {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      border: 0;
+      background: linear-gradient(to bottom, transparent 54%, rgba(0,0,0,.18));
+      color: #fff;
+      cursor: pointer;
+      transition: opacity .16s ease;
+    }
+    .tap-play[hidden] { display: none; }
+    .tap-play__circle {
+      display: grid;
+      place-items: center;
+      width: 66px;
+      height: 66px;
+      border: 1px solid rgba(255,255,255,.62);
+      border-radius: 50%;
+      background: rgba(7, 13, 10, .64);
+      box-shadow: 0 12px 36px rgba(0,0,0,.28);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .tap-play svg { width: 28px; height: 28px; margin-left: 3px; }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 20px;
+      color: var(--paper);
+      background: rgba(8, 11, 9, .86);
+      pointer-events: none;
+    }
+    .loading[hidden] { display: none; }
+    .loading p {
+      margin: 0;
+      font-size: .83rem;
+      line-height: 1.5;
+      font-weight: 650;
+      text-align: center;
+    }
+    .loading-dots { display: flex; gap: 8px; height: 28px; align-items: center; }
+    .loading-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--paper);
+      animation: pulse 1.15s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: .14s; }
+    .loading-dots span:nth-child(3) { animation-delay: .28s; }
+    @keyframes pulse {
+      0%, 72%, 100% { transform: translateY(0); opacity: .35; }
+      34% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    .controls {
+      padding: 9px 12px 11px;
+      background: var(--paper-strong);
+    }
+
+    .range {
+      --progress: 0%;
+      display: block;
+      width: 100%;
+      height: 32px;
+      margin: 0;
+      padding: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+      accent-color: var(--green);
+    }
+    .range::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 99px;
+      background: linear-gradient(to right, var(--green) var(--progress), var(--green-faint) var(--progress));
+    }
+    .range::-moz-range-track {
+      height: 6px;
+      border-radius: 99px;
+      background: var(--green-faint);
+    }
+    .range::-moz-range-progress {
+      height: 6px;
+      border-radius: 99px;
+      background: var(--green);
+    }
+    .range::-webkit-slider-thumb {
+      width: 20px;
+      height: 20px;
+      margin-top: -7px;
+      border: 2px solid var(--paper-strong);
+      border-radius: 50%;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--green);
+      box-shadow: 0 0 0 1px var(--green-mid);
+    }
+    .range::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--paper-strong);
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 1px var(--green-mid);
+    }
+
+    .transport {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control, .speed {
+      min-height: 44px;
+      color: var(--green);
+      background: transparent;
+      border: 1px solid var(--green-mid);
+      border-radius: 11px;
+      font-size: .8rem;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+    .control {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    .control svg { width: 19px; height: 19px; flex: none; pointer-events: none; }
+    .play {
+      color: var(--paper);
+      background: var(--green);
+      border-color: var(--green);
+      white-space: nowrap;
+    }
+    .pause-icon, .muted-icon { display: none; }
+    .play.is-playing .play-icon, .mute.is-muted .sound-icon { display: none; }
+    .play.is-playing .pause-icon, .mute.is-muted .muted-icon { display: inline; }
+
+    .time {
+      min-width: 0;
+      color: var(--green);
+      font-size: .78rem;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .time i { margin: 0 3px; font-style: normal; opacity: .52; }
+    .fullscreen { padding-inline: 11px; white-space: nowrap; }
+
+    .options {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 98px;
+      align-items: center;
+      gap: 10px;
+      margin-top: 7px;
+    }
+    .volume-group {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 34px;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+    .mute { width: 44px; padding: 8px; }
+    .volume-value {
+      color: var(--green);
+      font-size: .71rem;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .speed-wrap { position: relative; }
+    .speed-wrap::after {
+      content: "";
+      position: absolute;
+      right: 12px;
+      top: 16px;
+      width: 6px;
+      height: 6px;
+      border-right: 2px solid var(--green);
+      border-bottom: 2px solid var(--green);
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+    .speed {
+      width: 100%;
+      padding: 8px 26px 8px 10px;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    .status {
+      min-height: 1.45em;
+      margin: 5px 1px 0;
+      color: var(--green);
+      font-size: .7rem;
+      line-height: 1.45;
+    }
+
+    .hint {
+      margin: 0;
+      padding: 0 4px;
+      color: rgba(13,13,13,.58);
+      font-size: .7rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .control:disabled, .range:disabled, .speed:disabled { opacity: .42; cursor: default; }
+    .control:focus-visible, .range:focus-visible, .speed:focus-visible, .tap-play:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    body.expanded {
+      overflow: hidden;
+      background: var(--screen);
+    }
+    body.expanded .page {
+      width: 100%;
+      height: 100dvh;
+      min-height: 100dvh;
+      padding: 0;
+      gap: 0;
+      background: var(--screen);
+    }
+    body.expanded .titlebar, body.expanded .hint { display: none; }
+    body.expanded .player-card {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    body.expanded .video-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: max(0px, var(--safe-top)) 0 0;
+      background: var(--screen);
+    }
+    body.expanded .video-stage {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      aspect-ratio: auto;
+      border-radius: 0;
+    }
+    body.expanded .controls {
+      flex: none;
+      padding: 7px 12px max(9px, calc(var(--safe-bottom) + 6px));
+    }
+
+    .player-card:fullscreen,
+    .player-card:-webkit-full-screen {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      background: var(--screen);
+      border: 0;
+      border-radius: 0;
+    }
+    .player-card:fullscreen .video-wrap,
+    .player-card:-webkit-full-screen .video-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 0;
+      background: var(--screen);
+    }
+    .player-card:fullscreen .video-stage,
+    .player-card:-webkit-full-screen .video-stage {
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      aspect-ratio: auto;
+      border-radius: 0;
+    }
+    .player-card:fullscreen .controls,
+    .player-card:-webkit-full-screen .controls {
+      flex: none;
+      padding-bottom: max(10px, var(--safe-bottom));
+    }
+
+    @media (max-width: 380px) {
+      .page { padding-left: 10px; padding-right: 10px; }
+      .transport { grid-template-columns: 88px minmax(0, 1fr) auto; gap: 6px; }
+      .time { font-size: .7rem; }
+      .fullscreen { padding-inline: 8px; }
+      .options { gap: 7px; grid-template-columns: minmax(0, 1fr) 94px; }
+      .volume-group { gap: 5px; grid-template-columns: 42px minmax(0, 1fr) 32px; }
+    }
+
+    @media (min-width: 760px) {
+      body { padding-block: 24px; }
+      .page { min-height: calc(100dvh - 48px); }
+    }
+
+    @media (orientation: landscape) and (max-height: 520px) {
+      .page { width: min(100%, 920px); padding: 8px 12px; gap: 7px; }
+      .titlebar { display: none; }
+      .player-card { display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
+      .video-wrap { padding: 7px; background: var(--screen); }
+      .video-stage { width: auto; height: calc(100dvh - 30px); max-width: none; }
+      .controls { align-self: center; }
+      .hint { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .loading-dots span { animation: none; opacity: .8; }
+      .tap-play { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="titlebar">
+      <div class="title-copy">
+        <p class="eyebrow">STORY FILM</p>
+        <h1>이야기의 배경</h1>
+      </div>
+      <p class="series">똑... 똑... 똑...</p>
+    </header>
+
+    <section class="player-card" id="playerCard" aria-label="이야기의 배경 영상 플레이어">
+      <div class="video-wrap">
+        <div class="video-stage" id="videoStage" aria-busy="true">
+          <video id="storyVideo" playsinline webkit-playsinline preload="metadata" aria-label="똑... 똑... 똑... 이야기의 배경 영상">
+            <source src="assets/story-background.mp4" type="video/mp4">
+            이 브라우저에서는 영상을 재생할 수 없습니다.
+          </video>
+
+          <button class="tap-play" id="centerPlay" type="button" aria-label="영상 재생">
+            <span class="tap-play__circle" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3.5v17L21 12z"/></svg>
+            </span>
+          </button>
+
+          <div class="loading" id="loading" role="status" aria-live="polite">
+            <div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <p>영상을 불러오는 중입니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <input class="range seek" id="seek" type="range" min="0" max="1" step="0.1" value="0" aria-label="영상 재생 위치" aria-valuetext="0:00 / --:--" disabled>
+
+        <div class="transport" role="group" aria-label="영상 재생 조작">
+          <button class="control play" id="playButton" type="button" aria-label="재생" title="재생">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path class="play-icon" d="M7 3.5v17L21 12z"/>
+              <g class="pause-icon"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></g>
+            </svg>
+            <span id="playLabel">재생</span>
+          </button>
+
+          <div class="time" aria-label="현재 시간 및 전체 길이">
+            <span id="currentTime">0:00</span><i aria-hidden="true">/</i><span id="duration">--:--</span>
+          </div>
+
+          <button class="control fullscreen" id="fullscreenButton" type="button" aria-pressed="false" disabled>전체화면</button>
+        </div>
+
+        <div class="options" role="group" aria-label="음량과 재생 속도">
+          <div class="volume-group">
+            <button class="control mute" id="muteButton" type="button" aria-label="음소거" aria-pressed="false" title="음소거">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M11 4 6 8H3v8h3l5 4z"/>
+                <g class="sound-icon"><path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></g>
+                <g class="muted-icon"><path d="m16 9 6 6m0-6-6 6"/></g>
+              </svg>
+            </button>
+            <input class="range volume" id="volume" type="range" min="0" max="100" step="1" value="100" aria-label="영상 음량" aria-valuetext="100%">
+            <output class="volume-value" id="volumeValue" for="volume">100%</output>
+          </div>
+
+          <div class="speed-wrap">
+            <select class="speed" id="speed" aria-label="재생 속도" title="재생 속도">
+              <option value="0.5">0.5배속</option>
+              <option value="0.75">0.75배속</option>
+              <option value="1" selected>1배속</option>
+              <option value="1.25">1.25배속</option>
+              <option value="1.5">1.5배속</option>
+              <option value="1.75">1.75배속</option>
+              <option value="2">2배속</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="status" id="status" role="status" aria-live="polite">재생 버튼을 눌러 시작하세요.</p>
+      </div>
+    </section>
+
+    <p class="hint">영상은 자동으로 재생되지 않습니다. 이어폰 사용을 권장합니다.</p>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const video = document.getElementById('storyVideo');
+      const card = document.getElementById('playerCard');
+      const stage = document.getElementById('videoStage');
+      const loading = document.getElementById('loading');
+      const centerPlay = document.getElementById('centerPlay');
+      const playButton = document.getElementById('playButton');
+      const playLabel = document.getElementById('playLabel');
+      const seek = document.getElementById('seek');
+      const currentTime = document.getElementById('currentTime');
+      const totalTime = document.getElementById('duration');
+      const muteButton = document.getElementById('muteButton');
+      const volume = document.getElementById('volume');
+      const volumeValue = document.getElementById('volumeValue');
+      const speed = document.getElementById('speed');
+      const fullscreenButton = document.getElementById('fullscreenButton');
+      const status = document.getElementById('status');
+
+      let wantsPlayback = false;
+      let draggingSeek = false;
+      let chosenRate = 1;
+      let chosenVolume = video.volume;
+      let lastNonzeroVolume = chosenVolume || 1;
+      let audioContext = null;
+      let gainNode = null;
+      let fallbackExpanded = false;
+      let playAttempt = 0;
+
+      video.autoplay = false;
+      video.removeAttribute('autoplay');
+      video.controls = false;
+
+      let volumeSupported = true;
+      const initialVolume = video.volume;
+      try {
+        video.volume = 0.5;
+        volumeSupported = Math.abs(video.volume - 0.5) < 0.01;
+        video.volume = initialVolume;
+      } catch (_) {
+        volumeSupported = false;
+      }
+
+      const durationValue = () => Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
+      const setStatus = (message) => { if (status.textContent !== message) status.textContent = message; };
+
+      const formatTime = (seconds) => {
+        const value = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
+        const hours = Math.floor(value / 3600);
+        const minutes = Math.floor((value % 3600) / 60);
+        const secs = String(value % 60).padStart(2, '0');
+        return hours ? `${hours}:${String(minutes).padStart(2, '0')}:${secs}` : `${minutes}:${secs}`;
+      };
+
+      const syncTimeline = () => {
+        const length = durationValue();
+        seek.disabled = !length || Boolean(video.error);
+        seek.max = String(length || 1);
+        if (!draggingSeek) seek.value = String(Math.min(length || 1, video.currentTime || 0));
+        const position = draggingSeek ? Number(seek.value) : (video.currentTime || 0);
+        currentTime.textContent = formatTime(position);
+        totalTime.textContent = length ? formatTime(length) : '--:--';
+        seek.setAttribute('aria-valuetext', `${formatTime(position)} / ${length ? formatTime(length) : '--:--'}`);
+        seek.style.setProperty('--progress', `${length ? Math.min(100, Math.max(0, position / length * 100)) : 0}%`);
+      };
+
+      const isActivelyPlaying = () => wantsPlayback || (!video.paused && !video.ended);
+
+      const syncPlayback = () => {
+        const playing = isActivelyPlaying();
+        const label = playing ? '일시정지' : (video.ended ? '다시 재생' : '재생');
+        playButton.classList.toggle('is-playing', playing);
+        playButton.setAttribute('aria-label', label);
+        playButton.title = label;
+        playLabel.textContent = label;
+        playButton.disabled = Boolean(video.error);
+        centerPlay.hidden = playing || Boolean(video.error) || !loading.hidden;
+        centerPlay.setAttribute('aria-label', video.ended ? '영상 다시 재생' : '영상 재생');
+        fullscreenButton.disabled = video.readyState < 1 || Boolean(video.error);
+      };
+
+      const refreshLoading = () => {
+        const waiting = !video.error && (
+          video.readyState < 2 || video.seeking || (wantsPlayback && video.readyState < 3)
+        );
+        loading.hidden = !waiting;
+        stage.setAttribute('aria-busy', String(waiting));
+        syncPlayback();
+      };
+
+      const describePlayback = () => {
+        if (video.error) return;
+        if (video.ended) setStatus('재생이 끝났습니다. 다시 재생할 수 있습니다.');
+        else if (isActivelyPlaying()) setStatus('');
+        else if (video.currentTime > 0) setStatus('재생 버튼을 누르면 이어집니다.');
+        else setStatus('재생 버튼을 눌러 시작하세요.');
+      };
+
+      const resumeAudio = () => {
+        if (audioContext && audioContext.state !== 'running') {
+          void audioContext.resume().catch(() => {});
+        }
+      };
+
+      const ensureVolumeGain = () => {
+        if (gainNode) return true;
+        const AudioContextType = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextType || location.protocol === 'file:') return false;
+        try {
+          const mediaURL = new URL(video.currentSrc || video.querySelector('source')?.src || '', document.baseURI);
+          if (mediaURL.origin !== location.origin) return false;
+          audioContext = new AudioContextType();
+          gainNode = audioContext.createGain();
+          gainNode.gain.value = video.muted ? 0 : chosenVolume;
+          audioContext.createMediaElementSource(video).connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          resumeAudio();
+          return true;
+        } catch (_) {
+          gainNode = null;
+          if (audioContext) void audioContext.close().catch(() => {});
+          audioContext = null;
+          return false;
+        }
+      };
+
+      const syncVolume = () => {
+        if (volumeSupported && !gainNode) chosenVolume = video.volume;
+        const effective = video.muted ? 0 : chosenVolume;
+        if (gainNode) gainNode.gain.value = effective;
+        if (chosenVolume > 0) lastNonzeroVolume = chosenVolume;
+        const muted = effective === 0;
+        muteButton.classList.toggle('is-muted', muted);
+        muteButton.setAttribute('aria-label', muted ? '음소거 해제' : '음소거');
+        muteButton.setAttribute('aria-pressed', String(muted));
+        muteButton.title = muted ? '음소거 해제' : '음소거';
+        const percent = Math.round(effective * 100);
+        volume.value = String(percent);
+        volumeValue.textContent = `${percent}%`;
+        volume.setAttribute('aria-valuetext', `${percent}%`);
+        volume.style.setProperty('--progress', `${percent}%`);
+      };
+
+      const applyVolume = (value) => {
+        const next = Math.min(1, Math.max(0, value));
+        if (!volumeSupported && !ensureVolumeGain()) {
+          volume.disabled = true;
+          volumeValue.textContent = '기기';
+          volume.title = '이 기기에서는 본체 음량 버튼을 사용해 주세요.';
+          setStatus('음량은 휴대폰의 음량 버튼으로 조절해 주세요.');
+          return;
+        }
+        chosenVolume = next;
+        if (volumeSupported) video.volume = next;
+        video.muted = next === 0;
+        resumeAudio();
+        syncVolume();
+      };
+
+      const applyRate = () => {
+        video.defaultPlaybackRate = chosenRate;
+        video.playbackRate = chosenRate;
+        if ('preservesPitch' in video) video.preservesPitch = true;
+        if ('webkitPreservesPitch' in video) video.webkitPreservesPitch = true;
+        speed.value = String(chosenRate);
+      };
+
+      const pausePlayback = () => {
+        ++playAttempt;
+        wantsPlayback = false;
+        video.pause();
+        syncPlayback();
+        refreshLoading();
+        describePlayback();
+      };
+
+      const requestPlayback = async () => {
+        if (video.error) return;
+        const attempt = ++playAttempt;
+        wantsPlayback = true;
+        if (video.ended) video.currentTime = 0;
+        applyRate();
+        resumeAudio();
+        syncPlayback();
+        refreshLoading();
+        setStatus('');
+        try {
+          await video.play();
+        } catch (error) {
+          if (playAttempt !== attempt) return;
+          wantsPlayback = false;
+          if (!video.error && error?.name !== 'AbortError') {
+            setStatus(error?.name === 'NotAllowedError'
+              ? '재생 버튼을 한 번 더 눌러 주세요.'
+              : '영상을 재생하지 못했습니다. 재생 버튼을 다시 눌러 주세요.');
+          }
+        }
+        syncPlayback();
+        refreshLoading();
+      };
+
+      const togglePlayback = () => {
+        if (isActivelyPlaying()) pausePlayback();
+        else void requestPlayback();
+      };
+
+      const fullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+      const nativeVideoFullscreen = () => Boolean(video.webkitDisplayingFullscreen);
+      const isExpanded = () => Boolean(fullscreenElement()) || nativeVideoFullscreen() || fallbackExpanded;
+
+      const syncFullscreenButton = () => {
+        const expanded = isExpanded();
+        fullscreenButton.textContent = expanded ? '화면 축소' : '전체화면';
+        fullscreenButton.setAttribute('aria-label', expanded ? '전체화면 종료' : '전체화면');
+        fullscreenButton.setAttribute('aria-pressed', String(expanded));
+      };
+
+      const exitFullscreen = async () => {
+        try {
+          if (fullscreenElement()) {
+            if (document.exitFullscreen) await document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+          } else if (nativeVideoFullscreen() && video.webkitExitFullscreen) {
+            video.webkitExitFullscreen();
+          }
+        } catch (_) {}
+        if (fallbackExpanded) {
+          fallbackExpanded = false;
+          document.body.classList.remove('expanded');
+        }
+        syncFullscreenButton();
+      };
+
+      const enterFullscreen = async () => {
+        try {
+          if (card.requestFullscreen && document.fullscreenEnabled) {
+            await card.requestFullscreen();
+          } else if (card.webkitRequestFullscreen) {
+            card.webkitRequestFullscreen();
+          } else if (video.webkitEnterFullscreen) {
+            video.webkitEnterFullscreen();
+          } else {
+            fallbackExpanded = true;
+            document.body.classList.add('expanded');
+          }
+        } catch (_) {
+          fallbackExpanded = true;
+          document.body.classList.add('expanded');
+        }
+        syncFullscreenButton();
+      };
+
+      playButton.addEventListener('click', togglePlayback);
+      centerPlay.addEventListener('click', togglePlayback);
+      video.addEventListener('click', togglePlayback);
+
+      seek.addEventListener('pointerdown', () => { if (!seek.disabled) draggingSeek = true; });
+      seek.addEventListener('input', () => {
+        const length = durationValue();
+        if (!length || video.error) return;
+        video.currentTime = Math.min(length, Math.max(0, Number(seek.value)));
+        syncTimeline();
+      });
+      const finishSeek = () => { draggingSeek = false; syncTimeline(); };
+      seek.addEventListener('change', finishSeek);
+      seek.addEventListener('blur', finishSeek);
+      window.addEventListener('pointerup', () => { if (draggingSeek) finishSeek(); });
+      window.addEventListener('pointercancel', () => { if (draggingSeek) finishSeek(); });
+
+      muteButton.addEventListener('click', () => {
+        if (video.muted || chosenVolume === 0) applyVolume(chosenVolume || lastNonzeroVolume);
+        else { video.muted = true; syncVolume(); }
+      });
+      volume.addEventListener('input', () => applyVolume(Number(volume.value) / 100));
+      speed.addEventListener('change', () => {
+        chosenRate = Number(speed.value);
+        applyRate();
+      });
+      fullscreenButton.addEventListener('click', async () => {
+        if (isExpanded()) await exitFullscreen();
+        else await enterFullscreen();
+      });
+
+      video.addEventListener('ratechange', () => {
+        chosenRate = video.playbackRate;
+        speed.value = String(chosenRate);
+      });
+      video.addEventListener('volumechange', syncVolume);
+      video.addEventListener('play', () => {
+        wantsPlayback = true;
+        syncPlayback();
+        refreshLoading();
+        describePlayback();
+      });
+      video.addEventListener('pause', () => {
+        wantsPlayback = false;
+        syncPlayback();
+        refreshLoading();
+        describePlayback();
+      });
+      video.addEventListener('ended', () => {
+        wantsPlayback = false;
+        syncPlayback();
+        syncTimeline();
+        refreshLoading();
+        describePlayback();
+      });
+      ['timeupdate', 'durationchange', 'emptied'].forEach(name => video.addEventListener(name, syncTimeline));
+      video.addEventListener('loadedmetadata', () => {
+        applyRate();
+        syncTimeline();
+        syncPlayback();
+        refreshLoading();
+      });
+      ['loadeddata', 'canplay', 'seeked'].forEach(name => video.addEventListener(name, () => {
+        refreshLoading();
+        describePlayback();
+      }));
+      ['loadstart', 'waiting', 'stalled', 'seeking'].forEach(name => video.addEventListener(name, refreshLoading));
+      video.addEventListener('playing', () => {
+        refreshLoading();
+        setStatus('');
+      });
+      video.addEventListener('error', () => {
+        wantsPlayback = false;
+        loading.hidden = true;
+        stage.setAttribute('aria-busy', 'false');
+        syncPlayback();
+        syncTimeline();
+        setStatus('영상을 불러오지 못했습니다. 페이지를 새로고침해 주세요.');
+      });
+
+      document.addEventListener('fullscreenchange', syncFullscreenButton);
+      document.addEventListener('webkitfullscreenchange', syncFullscreenButton);
+      video.addEventListener('webkitbeginfullscreen', syncFullscreenButton);
+      video.addEventListener('webkitendfullscreen', syncFullscreenButton);
+
+      document.addEventListener('keydown', (event) => {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) return;
+        if (event.code === 'Space') {
+          event.preventDefault();
+          togglePlayback();
+        } else if (event.code === 'Escape' && fallbackExpanded) {
+          void exitFullscreen();
+        }
+      });
+
+      window.addEventListener('pagehide', pausePlayback);
+
+      syncTimeline();
+      syncVolume();
+      syncPlayback();
+      syncFullscreenButton();
+      refreshLoading();
+    })();
+  </script>
+</body>
+</html>
